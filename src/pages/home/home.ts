@@ -1,5 +1,5 @@
 import { Component, ViewChild } from '@angular/core';
-import { NavController, Slides } from 'ionic-angular';
+import { NavController, Slides, ToastController } from 'ionic-angular';
 
 import * as WC from 'woocommerce-api';
 
@@ -10,10 +10,18 @@ import * as WC from 'woocommerce-api';
 export class HomePage {
   public WooCommerce: any;
   public products: any[];
+  public moreProducts: any[];
+  public page: number;
 
   @ViewChild('productSlides') productSlides: Slides;
 
-  constructor(public navCtrl: NavController) {
+  constructor(
+    public navCtrl: NavController,
+    public toastCtrl: ToastController
+  ) {
+
+    this.page = 2;
+
     this.WooCommerce = WC({
       url: 'http://localhost:8888/',
       consumerKey: 'ck_33659245c8ad0bab4000b38102b74f232bd1437e',
@@ -22,6 +30,8 @@ export class HomePage {
       version: 'wc/v2', // WooCommerce WP REST API version
       queryStringAuth: true,
     });
+
+    this.loadMoreProducts(null);
 
     this.WooCommerce.getAsync('products').then(
       data => {
@@ -42,6 +52,35 @@ export class HomePage {
     }
     this.productSlides.slideNext();
    }, 3000);
+  }
+
+  loadMoreProducts(event) {
+
+    if (event == null) {
+      this.page = 2;
+      this.moreProducts = [];
+    }else{
+      this.page ++;
+    }
+
+    this.WooCommerce.getAsync('products?page=' + this.page).then(data => {
+        this.moreProducts = this.moreProducts.concat(JSON.parse(data.body));
+
+        if (event != null) {
+          event.complete();
+        }
+
+        if (JSON.parse(data.body).length < 10) {
+          event.enable(false);
+
+          this.toastCtrl.create({
+            message: "No more products!",
+            duration: 5000
+          }).present();
+        }
+      }, err => {
+        console.log(err);
+      });
   }
 
 }
