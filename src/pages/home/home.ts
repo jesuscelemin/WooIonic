@@ -35,7 +35,7 @@ export class HomePage {
     this.loadMoreProducts(null);
 
     this.WooCommerce.getAsync('products').then(
-      data => {
+      (data) => {
         this.products = JSON.parse(data.body);
         console.log(this.products);
       },
@@ -61,10 +61,10 @@ export class HomePage {
       this.page = 2;
       this.moreProducts = [];
     }else{
-      this.page ++;
+      this.page++;
     }
 
-    this.WooCommerce.getAsync('products?page=' + this.page).then(data => {
+    this.WooCommerce.getAsync('products?page=' + this.page).then((data) => {
         this.moreProducts = this.moreProducts.concat(JSON.parse(data.body));
 
         if (event != null) {
